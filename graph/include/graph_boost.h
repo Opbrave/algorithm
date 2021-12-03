@@ -1,9 +1,9 @@
 /*!
- * @brief Base graph class
+ * @brief Base graph class with Boost
  */
 
-#ifndef __ALGORITHM_GRAPH_CLASS_H__
-#define __ALGORITHM_GRAPH_CLASS_H__
+#ifndef __ALGORITHM_GRAPH_CLASS_BOOST_H__
+#define __ALGORITHM_GRAPH_CLASS_BOOST_H__
 
 #include <string>
 #include <boost/graph/graph_traits.hpp>
@@ -12,6 +12,7 @@
 
 namespace algorithm {
 namespace graph {
+namespace bt {
 
 struct Node {
   uint32_t uid;
@@ -63,7 +64,8 @@ Node CreateNode(std::string name);
 
 std::ostream& operator<<(std::ostream& os, Node node);
 
+}  // namespace bt
 }  // namespace graph
 }  // namespace algorithm
 
-#endif  // __ALGORITHM_GRAPH_CLASS_H__
+#endif  // __ALGORITHM_GRAPH_CLASS_BOOST_H__

@@ -8,6 +8,7 @@ set(GRAPH_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 find_package(Boost)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
+  Message("Boost Path: " ${Boost_INCLUDE_DIRS})
 endif()
 
 # includes

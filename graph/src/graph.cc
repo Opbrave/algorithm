@@ -1,9 +1,11 @@
-#include "graph.h"
+#include "graph_boost.h"
 
 #include <iostream>
 
 namespace algorithm {
 namespace graph {
+
+namespace bt {
 
 node_t GraphDerived::AddNode(const Node& node) {
   node_t graph_node = boost::add_vertex(graph_);
@@ -45,6 +47,6 @@ std::ostream& operator<<(std::ostream& os, Node node) {
 }
 
 
-
+}  // namespace bt
 }  // namespace graph
 }  // namespace algorithm
