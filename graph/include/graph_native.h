@@ -33,18 +33,21 @@ struct Edge {
    std::pair<Node<Ty>*, Node<Ty>*> node_pair_;
 };
 
-template<typename Ty>
+template<class CNode, class CEdge>
 struct Graph {
   public:
-   std::shared_ptr<Node<Ty>> AddNode(std::string name);
+   std::shared_ptr<CNode> AddNode(std::string name) {
+    nodes_.push_back(std::make_shared<CNode>(name));
+    return nodes_.back();
+   }
 
-   void AddEdge(Edge<Ty>& edge);
+   //void AddEdge(CEdge& edge);
 
-   void AddEdge(Node<Ty>* a, Node<Ty>* b);
+   //void AddEdge(Node<Ty>* a, Node<Ty>* b);
 
   private:
-   std::vector<std::shared_ptr<Node<Ty>>> nodes_;
-   std::vector<Edge<Ty>> edges_;
+   std::vector<std::shared_ptr<CNode>> nodes_;
+   //std::vector<Edge<Ty>> edges_;
 };
 
 } // namespace graph
