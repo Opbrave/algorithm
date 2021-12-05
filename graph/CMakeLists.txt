@@ -9,7 +9,12 @@ find_package(Boost)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
   Message("Boost Path: " ${Boost_INCLUDE_DIRS})
+else ()
+  Message( FATAL_ERROR "Not find " ${Boost_INCLUDE_DIRS} )
 endif()
+
+find_package(glog REQUIRED)
+
 
 # includes
 include_directories(AFTER "${GRAPH_DIR}/include")
@@ -34,6 +39,7 @@ endif()
 file(GLOB_RECURSE COMPILE_SRCS ${GRAPH_DIR}/*.cc)
 
 add_library(GraphAlgorithm SHARED ${COMPILE_SRCS})
+target_link_libraries(GraphAlgorithm glog::glog)
 
 # Tests
 set(TEST_EXES "")
