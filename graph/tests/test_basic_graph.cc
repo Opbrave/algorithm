@@ -7,7 +7,10 @@ int main() {
     Graph<Node<int>, Edge<int>> graph;
     auto node_tmp = std::make_shared<Node<int>>("B");
     auto node_a = graph.AddNode("A");
+    auto node_b = graph.AddNode("B");
+    graph.AddEdge(node_a, node_b);
     graph.DumpNodes();
+    graph.DumpEdges();
     return 0;
 }
 
