@@ -22,7 +22,8 @@ include_directories(AFTER "${GRAPH_DIR}/include")
 # compile flags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pipe -Wall -Werror -fPIC -fstack-protector-all")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -pipe -Wall -Werror -fPIC -fstack-protector-all")
+# enable all warning check by error -Werror
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -pipe -Wall -fPIC -fstack-protector-all")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   message("-- Build in Debug mode")
