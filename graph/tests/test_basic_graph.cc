@@ -29,6 +29,7 @@ int main() {
     auto graph_pattern0 = create_pattern1_graph<int>();
     graph_pattern0.DumpNodes();
     graph_pattern0.DumpEdges();
+    auto topo_vec = graph_pattern0.GetTopoOrder();
     return 0;
 }
 

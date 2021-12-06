@@ -62,6 +62,7 @@ struct Graph {
   public:
    using InEdgeMap = std::map<CNode*, std::set<CNode*> >;
    using OutEdgeMap = InEdgeMap;
+   using NodeVec = std::vector<std::shared_ptr<CNode>>;
    std::shared_ptr<CNode> AddNode(std::string name);
 
    void AddEdge(CEdge& edge) {
@@ -82,13 +83,36 @@ struct Graph {
      }
    }
 
+   NodeVec GetTopoOrder();
+
   private:
-   std::vector<std::shared_ptr<CNode> > nodes_;
+    
+    std::shared_ptr<CNode> get_and_delete_zero_indegree_node(NodeVec& nodes, InEdgeMap& in_edges) {
+    for (const auto& node : nodes) {
+      if (in_edges.find(node.get()) == in_edges.end() || in_edges[node.get()].empty()) {
+        typename std::vector<std::shared_ptr<CNode>>::iterator it = std::find(nodes.begin(), nodes.end(), node);
+        if (it != nodes.end())
+          nodes.erase(it);
+        // update another node's indegree
+        for (auto& item : in_edges) {
+          auto& inedge_set = item.second;
+          if (inedge_set.find(node.get()) != inedge_set.end()) {
+            inedge_set.erase(node.get());
+          }
+        }
+        return node;
+      }
+    }
+    CHECK(false) << "This Graph has a cycle!";
+  };
+
+
+  private:
+   NodeVec nodes_;
    std::vector<CEdge> edges_;
    InEdgeMap edges_in_;
    OutEdgeMap edges_out_;
-
-   
+ 
 };
 
 template<class CNode, class CEdge>
@@ -107,6 +131,28 @@ void Graph<CNode, CEdge>::AddEdge(std::shared_ptr<CNode>& start, std::shared_ptr
   auto& out_set = edges_out_[start.get()];
   out_set.insert(end.get());
   edges_.push_back(CEdge(start, end));
+}
+
+template<class CNode, class CEdge>
+std::vector<std::shared_ptr<CNode>> Graph<CNode, CEdge>::GetTopoOrder() {
+  // TODO: Should choose a better one
+  std::vector<std::shared_ptr<CNode>> mutate_nodes = nodes_;
+  InEdgeMap mutate_inedge = edges_in_;
+  //OutEdgeMap mutate_outedge = edges_outs_;
+
+  std::vector<std::shared_ptr<CNode>> order;
+  int vertex_size = nodes_.size();
+  while (order.size() < vertex_size) {
+    if (mutate_nodes.empty() && order.size() < vertex_size) {
+      order.clear();
+      break;
+      LOG(INFO) << "Cycle checked!";
+    }
+    auto entry = get_and_delete_zero_indegree_node(mutate_nodes, mutate_inedge);
+    order.push_back(entry);
+  }
+  return order;
+  
 }
 
 
