@@ -61,7 +61,7 @@ int main() {
     // dfs
     auto node_index0 = graph_pattern0.GetNode(0);
     std::vector<Node<int>*> node_vec;
-    BFS<int>(graph_pattern0, node_index0, node_vec);
+    BFS<int>(graph_pattern0, node_index0);
     for (auto& nd : node_vec) {
         LOG(INFO) << *nd;
     }
