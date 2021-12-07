@@ -22,7 +22,7 @@ template<typename Ty>
 struct Node {
   public:
    Node(std::string name):name_(name) {}
-   std::string Name() { return name_; }
+   const std::string Name() const { return name_; }
 
   private:
    std::string name_;
@@ -30,20 +30,24 @@ struct Node {
 };
 
 template<typename Ty>
+std::ostream& operator<<(std::ostream& os, const Node<Ty>& node) {
+  os << "{ \n" << "\t type: Node\n" << "\t name: " << node.Name() << "\n }\n";
+  return os;
+}
+
+template<typename Ty>
 struct Edge {
   public:
    Edge() = delete;
    Edge(std::shared_ptr<Node<Ty>> a, std::shared_ptr<Node<Ty>> b) : node_pair_(std::make_pair(a, b)) {}
 
-   std::shared_ptr<Node<Ty>> GetStartNode() {
+   const std::shared_ptr<Node<Ty>> GetStartNode() const {
      return node_pair_.first;
    }
 
-   std::shared_ptr<Node<Ty>> GetEndNode() {
+   const std::shared_ptr<Node<Ty>> GetEndNode() const {
      return node_pair_.second;
    }
-
-   friend std::ostream& operator<<(std::ostream* os, Edge edge);
 
   private:
    // A default direction been defined by pair， where pair.first  --> . pair.second
@@ -52,8 +56,8 @@ struct Edge {
 
 
 template<typename Ty>
-std::ostream& operator<<(std::ostream& os, Edge<Ty> edge) {
-  os << "Node(" << edge.GetStartNode()->Name() << ") -----> Node(" << edge.GetEndNode()->Name() << ")"; 
+std::ostream& operator<<(std::ostream& os, const Edge<Ty>& edge) {
+  os << "Node(" << edge.GetStartNode()->Name() << ") -----> Node(" << edge.GetEndNode()->Name() << ")";
   return os;
 }
 
@@ -72,6 +76,25 @@ struct Graph {
 
    void AddEdge(std::shared_ptr<CNode>& a, std::shared_ptr<CNode>& b);
 
+   CNode* GetNode(size_t index) {
+     CHECK_LT(index, nodes_.size());
+     return nodes_[index].get();
+   }
+
+   std::set<CNode*> GetOutNodes(CNode* node) {
+     if (edges_out_.find(node) != edges_out_.end()) {
+       return edges_out_[node];
+     }
+     return {};
+   }
+
+   std::set<CNode*> GetInNodes(CNode* node) {
+     if (edges_in_.find(node) != edges_in_.end()) {
+       return edges_in_[node];
+     }
+     return {};
+   }
+
    void DumpNodes() {
      for (const auto& item : nodes_)
        LOG(INFO) << "Node: " << item->Name();
@@ -85,14 +108,18 @@ struct Graph {
 
    NodeVec GetTopoOrder();
 
+  std::set<std::vector<std::shared_ptr<CNode>>> GetSCCs();
+
   private:
-    
+
     std::shared_ptr<CNode> get_and_delete_zero_indegree_node(NodeVec& nodes, InEdgeMap& in_edges) {
     for (const auto& node : nodes) {
+      LOG(INFO) << "Current node: " << node->Name();
       if (in_edges.find(node.get()) == in_edges.end() || in_edges[node.get()].empty()) {
         typename std::vector<std::shared_ptr<CNode>>::iterator it = std::find(nodes.begin(), nodes.end(), node);
-        if (it != nodes.end())
-          nodes.erase(it);
+        // TODO: refine it
+        // copy node
+        auto cpy_node = node;
         // update another node's indegree
         for (auto& item : in_edges) {
           auto& inedge_set = item.second;
@@ -100,7 +127,13 @@ struct Graph {
             inedge_set.erase(node.get());
           }
         }
-        return node;
+        if (it != nodes.end())
+          nodes.erase(it);
+        LOG(INFO) << "Entry Node: " << cpy_node->Name();
+        return cpy_node;
+      } else {
+        auto node_set = in_edges[node.get()];
+        LOG(INFO) << "Node " << node->Name() << " in edge size: " << node_set.size();
       }
     }
     CHECK(false) << "This Graph has a cycle!";
@@ -112,7 +145,7 @@ struct Graph {
    std::vector<CEdge> edges_;
    InEdgeMap edges_in_;
    OutEdgeMap edges_out_;
- 
+
 };
 
 template<class CNode, class CEdge>
@@ -133,6 +166,7 @@ void Graph<CNode, CEdge>::AddEdge(std::shared_ptr<CNode>& start, std::shared_ptr
   edges_.push_back(CEdge(start, end));
 }
 
+// kahn algorithm for Topo order
 template<class CNode, class CEdge>
 std::vector<std::shared_ptr<CNode>> Graph<CNode, CEdge>::GetTopoOrder() {
   // TODO: Should choose a better one
@@ -152,9 +186,40 @@ std::vector<std::shared_ptr<CNode>> Graph<CNode, CEdge>::GetTopoOrder() {
     order.push_back(entry);
   }
   return order;
-  
+
 }
 
+// kosaraju algorithm for SCC(Strong Connection Component)
+// 1. reverse the graph
+// 2. DFS in reverse graph, get a finished time order
+// 3. DFS with a decreasing order calculated in step2
+//template<class CNode, class CEdge>
+//std::set<std::vector<std::shared_ptr<CNode>>> Graph<CNode, CEdge>::GetSCCs() {
+//
+//}
+
+
+
+// Algorithms outside graph struct
+
+template <typename Ty>
+void DFS(Graph<Node<Ty>, Edge<Ty>> &graph, Node<Ty> *node, std::vector<Node<Ty> *> &node_vec)
+{
+  auto outs = graph.GetOutNodes(node);
+  for (auto &vertex : outs)
+  {
+    DFS(graph, vertex, node_vec);
+  }
+  if (std::find(node_vec.begin(), node_vec.end(), node) == node_vec.end())
+  {
+    node_vec.push_back(node);
+  }
+}
+
+template <typename Ty>
+void BFS(Graph<Node<Ty>, Edge<Ty>> &graph, Node<Ty> *node, std::vector<Node<Ty> *> &node_vec)
+{
+}
 
 } // namespace graph
 } // namespace algorithm
